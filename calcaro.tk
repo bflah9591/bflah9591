@@ -1,0 +1,30 @@
+#!/usr/bin/bash
+
+wm title . { Calculate ARO Days }
+wm minsize . 300 100
+wm geometry . +650+400
+wm resizable . 0 0
+
+set numweeks 0
+set arodays 0
+
+frame .f0 -relief groove -borderwidth 4
+frame .f1
+
+pack .f0 -side top -anchor "w" -padx 4 -pady 4 -ipadx 2 -ipady 2 -fill both
+pack .f1 -after .f0 -padx 2 -pady 2 -fill both
+
+label .lab01 -text "Number of weeks: "
+label .lab02 -text "Total ARO Days: "
+label .lab03 -text "$arodays"
+
+entry .e01 -textvariable numweeks -width 4
+
+button .btnARO -text " *  " -width 5 -cursor pointinghand -command { set arodays [ expr $numweeks * 7 + 60 ]; .lab03 configure -text $arodays; after 500; update }
+
+grid .lab01 .e01 .btnARO -in .f0 -padx 5 -pady 5 -sticky "w"
+grid .lab02 .lab03 -in .f0 -padx 5 -pady 5 -sticky "w"
+
+bind .e01 <KeyPress-Return> { set arodays [ expr $numweeks * 7 + 60 ]; .lab03 configure -text $arodays; after 500; update }
+
+focus -force .
