@@ -1,0 +1,23 @@
+#!/usr/bin/bash
+
+wm title . {  Adjust Shipping Cost  }
+wm minsize . 330 100
+wm geometry . +600+300
+wm resizable . 0 0
+ 
+set adjshipcost 0.00
+
+entry .e01 -textvariable quantity -width 4
+entry .e02 -textvariable weight -width 4
+
+label .labcost -text "Quantity"
+label .labwt -text "   Weight"
+label .scost1 -text "Shipping Cost"
+label .scost2 -text "\$$adjshipcost"
+
+grid .labcost .e01 .labwt .e02 -padx 2 -pady 2 -ipadx 4 -ipady 4 -sticky "w"
+grid .scost1 .scost2 -padx 2 -pady 2 -ipadx 4 -ipady 4 -sticky "w"
+
+bind .e02 <KeyPress-Return> { set adjshipcost [ expr $quantity * $weight * 3.00 ]; .scost2 configure -text "\$$adjshipcost"; after 500; update }
+
+focus -force . 
