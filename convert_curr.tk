@@ -1,0 +1,43 @@
+#!/usr/bin/wish
+
+wm title . { Convert Currency }
+wm minsize . 430 50
+wm geometry . +600+300
+wm resizable . 0 0
+
+set date [clock format [clock seconds] -format "%a %b-%d-%Y"]
+set time [clock format [clock seconds] -format "%H:%M"]
+
+set text1 "Value to convert: "
+set temp 0
+
+tk_optionMenu .om1 cfactor "Convert €€€ to $$$" "Convert £££ to $$$"
+
+label .sp1 -text "   "
+label .l01 -text $text1
+
+entry .e01 -textvariable value -width 4
+
+button .btnSet -text " Convert " -width 9 -cursor hand -command { convertCurr }
+
+grid .sp1 .l01 .e01 .om1 .btnSet -padx 3 -pady 3 -sticky "w"
+
+
+proc convertCurr {} {
+
+global value cfactor
+
+if { $cfactor == "Convert €€€ to $$$" } {
+
+	set result [ expr $value * 1.5 ] 
+	set rresult [format "%.2f" $result ]
+	set reply [ tk_dialog .reply "Convert €€€ to $$$" "\€$value is \$$rresult" 0 OK OK ]}
+	
+if { $cfactor == "Convert £££ to $$$" } {
+
+	set result [ expr $value * 2 ] 
+	set rresult [format "%.2f" $result ]
+	set reply [ tk_dialog .reply "Convert £££ to $$$" "\£$value is \$$rresult" 0 OK OK ]}
+	
+
+}
