@@ -18,6 +18,22 @@ label .scost2 -text "\$$adjshipcost"
 grid .labcost .e01 .labwt .e02 -padx 2 -pady 2 -ipadx 4 -ipady 4 -sticky "w"
 grid .scost1 .scost2 -padx 2 -pady 2 -ipadx 4 -ipady 4 -sticky "w"
 
-bind .e02 <KeyPress-Return> { set adjshipcost [ expr $quantity * $weight * 3.00 ]; .scost2 configure -text "\$$adjshipcost"; after 500; update }
+bind .e02 <KeyPress-Return> { procASC }
 
 focus -force . 
+
+proc procASC { } {
+
+global quantity weight
+
+set adjsc [ expr $quantity * $weight * 3.00 ]
+
+set adjshipcost [ format "\$%.2f" $adjsc ]
+
+.scost2 configure -text $adjshipcost
+
+after 500
+
+update
+
+ }
