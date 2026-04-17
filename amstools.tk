@@ -1,0 +1,285 @@
+#!/bin/sh
+# the next line restarts using wish \
+exec wish "$0" "$@"
+
+source rnotebook.tk
+
+#################################
+# The following code implements the notebook widget.
+#
+
+wm resizable . 0 0
+wm geometry . 855x385+425+250
+wm title . " Brian's AMS Tools "
+
+frame .un -borderwidth 3 -relief groove
+frame .deux -borderwidth 3 -relief groove 
+
+pack .un -side top -fill both -expand 1
+pack .deux -side top -fill x
+
+set nn .un.n 
+
+Rnotebook:create $nn -tabs {" Adjust Shipping Cost " " Calculate ARO " " Convert Currency " " Unit-of-Measure " " Ounces-to-Pounds " " Ounces-to-Grams " " Grams-to-Ounces" } -borderwidth 1 -height 25
+
+pack $nn -fill both -expand 1 -padx 3 -pady 3
+
+set adjshipcost 0.00
+
+set frm [Rnotebook:frame $nn 1]
+
+entry $frm.e01 -text quantity -width 8
+entry $frm.e02 -text weight -width 8
+
+label $frm.tablabel1 -text "Adjust Shipping Cost" -font {-family Verdana -weight bold -size 16}
+label $frm.labcost -text "Quantity"
+label $frm.labwt -text "   Weight"
+label $frm.scost1 -text "Shipping Cost"
+label $frm.scost2 -text "\$$adjshipcost"
+
+grid $frm.tablabel1 -padx 2 -pady 2 -ipadx 4 -ipady 4 -sticky "w"
+grid $frm.labcost $frm.e01 $frm.labwt $frm.e02 -padx 2 -pady 2 -ipadx 4 -ipady 4 -sticky "w"
+grid $frm.scost1 $frm.scost2 -padx 2 -pady 2 -ipadx 4 -ipady 4 -sticky "w"
+
+bind $frm.e02 <KeyPress-Return> { procASC }
+
+set frm [Rnotebook:frame $nn 2]
+
+set numweeks 0
+set arodays 0
+
+label $frm.tablabel2 -text "Calculate ARO" -font {-family Verdana -weight bold -size 16}
+label $frm.l1b -text "Number of Weeks"
+label $frm.l2b -text "Total ARO Days"
+label $frm.l3b -text "$arodays"
+
+entry $frm.e1b -textvariable numweeks -width 4
+
+grid $frm.tablabel2 -pady 10 -padx 2 -sticky "w"
+grid $frm.l1b $frm.e1b $frm.l2b $frm.l3b -pady 10 -padx 3 -sticky "w"
+
+bind $frm.e1b <KeyPress-Return> { calcARO }
+
+set frm [Rnotebook:frame $nn 3]
+
+set text1 "Value to convert: "
+set temp 0
+
+tk_optionMenu $frm.om1 cfactor "Convert EUR to USD" "Convert GBP to USD"
+
+label $frm.spc -text "Convert Currency" -font {-family Verdana -weight bold -size 16}
+label $frm.sp1 -text "   "
+label $frm.l1c -text "$text1"
+
+entry $frm.e1c -textvariable value -width 8
+
+button $frm.btnConCurr -text " Convert " -width 9 -cursor hand -command { convertCurr }
+
+grid $frm.spc -pady 10 -padx 3 -sticky "w"
+grid $frm.sp1 $frm.l1c $frm.e1c $frm.om1 $frm.btnConCurr -padx 3 -pady 3 -sticky "w"
+
+set frm [Rnotebook:frame $nn 4]
+label $frm.spd -text "Unit-of-Measure" -font {-family Verdana -weight bold -size 16}
+
+label $frm.l01 -text "AT - Atmosphere"
+label $frm.l02 -text "AY - Assembly"
+label $frm.l03 -text "BD - Bundle"
+label $frm.l04 -text "BG - Bag"
+label $frm.l05 -text "BT - Bottle"
+label $frm.l06 -text "BX - Box"
+label $frm.l07 -text "CA - Case"
+label $frm.l08 -text "CL - Coil"
+label $frm.l09 -text "CM - Centimeter (cm)"
+label $frm.l10 -text "CN - Can"
+label $frm.l11 -text "CO - Cubic Meters"
+label $frm.l12 -text "CS - Case"
+label $frm.l13 -text "CY - Cylinder"
+label $frm.l14 -text "DR - Drum"
+label $frm.l15 -text "DZ - Dozen"
+label $frm.l16 -text "EA - Each"
+label $frm.l17 -text "FT - Foot/Feet"
+label $frm.l18 -text "FV - Five (5)"
+label $frm.l19 -text "FY - Fifty (50)"
+label $frm.l20 -text "GL - Gallon"
+label $frm.l21 -text "HD - Hundred (100)"
+label $frm.l22 -text "IN - Inch"
+label $frm.l23 -text "JR - Jar"
+label $frm.l24 -text "KT - Kit"
+label $frm.l25 -text "LB - Pound"
+label $frm.l26 -text "LG - Length"
+label $frm.l27 -text "MX - Thousand (1,000)"
+label $frm.l28 -text "OZ - Ounce"
+label $frm.l29 -text "PG - Package"
+label $frm.l30 -text "PR - Pair"
+label $frm.l31 -text "PT - Pint"
+label $frm.l32 -text "QT - Quart"
+label $frm.l33 -text "RL - Roll"
+label $frm.l34 -text "RO - Roll"
+label $frm.l35 -text "SE - Section"
+label $frm.l36 -text "SF - Square Foot"
+label $frm.l37 -text "SH - Sheet"
+label $frm.l38 -text "SL - Spool"
+label $frm.l39 -text "TE - Tote"
+label $frm.l40 -text "TF - Twenty-five (25)"
+label $frm.l41 -text "TU - Tube"
+label $frm.l42 -text "VI - Vial"
+label $frm.l43 -text "YD - Yard"
+
+grid $frm.spd -padx 8 -sticky w
+grid $frm.l01 $frm.l15 $frm.l29 $frm.l43 -padx 8 -sticky w
+grid $frm.l02 $frm.l16 $frm.l30 -padx 8 -sticky w
+grid $frm.l03 $frm.l17 $frm.l31 -padx 8 -sticky w
+grid $frm.l04 $frm.l18 $frm.l32 -padx 8 -sticky w
+grid $frm.l05 $frm.l19 $frm.l33 -padx 8 -sticky w
+grid $frm.l06 $frm.l20 $frm.l34 -padx 8 -sticky w
+grid $frm.l07 $frm.l21 $frm.l35 -padx 8 -sticky w
+grid $frm.l08 $frm.l22 $frm.l36 -padx 8 -sticky w
+grid $frm.l09 $frm.l23 $frm.l37 -padx 8 -sticky w
+grid $frm.l10 $frm.l24 $frm.l38 -padx 8 -sticky w
+grid $frm.l11 $frm.l25 $frm.l39 -padx 8 -sticky w
+grid $frm.l12 $frm.l26 $frm.l40 -padx 8 -sticky w
+grid $frm.l13 $frm.l27 $frm.l41 -padx 8 -sticky w
+grid $frm.l14 $frm.l28 $frm.l42 -padx 8 -sticky w
+
+set frm [Rnotebook:frame $nn 5]
+label $frm.spe -text "Ounces-to-Pounds" -font {-family Verdana -weight bold -size 16}
+label $frm.c1h -text "Ounces      Pounds            Ounces       Pounds" -font {-weight bold -size 14}
+label $frm.line01 -text "    1    0.0625           9    0.5625" -font {-family Courier -size 14 }
+label $frm.line02 -text "    2    0.1250          10    0.6250" -font {-family Courier -size 14 }
+label $frm.line03 -text "    3    0.1875          11    0.6875" -font {-family Courier -size 14 }
+label $frm.line04 -text "    4    0.2500          12    0.7500" -font {-family Courier -size 14 }
+label $frm.line05 -text "    5    0.3125          13    0.8125" -font {-family Courier -size 14 }
+label $frm.line06 -text "    6    0.3750          14    0.8750" -font {-family Courier -size 14 }
+label $frm.line07 -text "    7    0.4375          15    0.9375" -font {-family Courier -size 14 }
+label $frm.line08 -text "    8    0.5000          16    1.0000" -font {-family Courier -size 14 }
+
+grid $frm.spe -sticky "w"
+grid $frm.c1h -sticky "w"
+grid $frm.line01 -sticky "w"
+grid $frm.line02 -sticky "w"
+grid $frm.line03 -sticky "w"
+grid $frm.line04 -sticky "w"
+grid $frm.line05 -sticky "w"
+grid $frm.line06 -sticky "w"
+grid $frm.line07 -sticky "w"
+grid $frm.line08 -sticky "w"
+
+
+set frm [Rnotebook:frame $nn 6]
+
+label $frm.spf -text "Ounces-to-Grams" -font {-family Verdana -weight bold -size 16}
+
+label $frm.l0h -text "  Ounces           Grams              Ounces                 Grams" -font {-weight bold -size 14}
+label $frm.ln01 -text "    1        28.35          20        566.99" -font {-family Courier -size 14 }
+label $frm.ln02 -text "    2        56.70          30        850.49" -font {-family Courier -size 14 }
+label $frm.ln03 -text "    3        85.05          40       1133.98" -font {-family Courier -size 14 }
+label $frm.ln04 -text "    4       113.40          50       1417.48" -font {-family Courier -size 14 }
+label $frm.ln05 -text "    5       141.75          60       1700.97" -font {-family Courier -size 14 }
+label $frm.ln06 -text "    6       170.10          70       1984.47" -font {-family Courier -size 14 }
+label $frm.ln07 -text "    7       198.45          80       2267.96" -font {-family Courier -size 14 }
+label $frm.ln08 -text "    8       226.80          90       2551.46" -font {-family Courier -size 14 }
+label $frm.ln09 -text "    9       255.15         100       2834.95" -font {-family Courier -size 14 }
+label $frm.ln10 -text "   10       283.50        1000      28349.52" -font {-family Courier -size 14 }
+
+grid $frm.spf -sticky "w"
+grid $frm.l0h -sticky "w"
+grid $frm.ln01 -sticky "w"
+grid $frm.ln02 -sticky "w"
+grid $frm.ln03 -sticky "w"
+grid $frm.ln04 -sticky "w"
+grid $frm.ln05 -sticky "w"
+grid $frm.ln06 -sticky "w"
+grid $frm.ln07 -sticky "w"
+grid $frm.ln08 -sticky "w"
+grid $frm.ln09 -sticky "w"
+grid $frm.ln10 -sticky "w"
+
+
+set frm [Rnotebook:frame $nn 7]
+
+label $frm.spg -text "Grams-to-Ounces" -font {-family Verdana -weight bold -size 16}
+label $frm.lnnh -text "  Grams              Ounces               Grams                 Ounces" -font {-weight bold -size 14}
+label $frm.lnn1 -text "    1        0.0353          20        0.7055" -font {-family Courier -size 14 }
+label $frm.lnn2 -text "    2        0.0706.         30        1.0582" -font {-family Courier -size 14 }
+label $frm.lnn3 -text "    3        0.1058.         40        1.4110" -font {-family Courier -size 14 }
+label $frm.lnn4 -text "    4        0.1411.         50        1.7637" -font {-family Courier -size 14 }
+label $frm.lnn5 -text "    5        0.1764.         60        2.1164" -font {-family Courier -size 14 }
+label $frm.lnn6 -text "    6        0.2116.         70        2.4692" -font {-family Courier -size 14 }
+label $frm.lnn7 -text "    7        0.2469.         80        2.8219" -font {-family Courier -size 14 }
+label $frm.lnn8 -text "    8        0.2822.         90        3.1747" -font {-family Courier -size 14 }
+label $frm.lnn9 -text "    9        0.3175.        100        3.5274" -font {-family Courier -size 14 }
+label $frm.lnn10 -text "   10        0.3527.       1000       35.2740" -font {-family Courier -size 14 }
+
+grid $frm.spg -sticky "w"
+grid $frm.lnnh -sticky "w"
+grid $frm.lnn1 -sticky "w"
+grid $frm.lnn2 -sticky "w"
+grid $frm.lnn3 -sticky "w"
+grid $frm.lnn4 -sticky "w"
+grid $frm.lnn5 -sticky "w"
+grid $frm.lnn6 -sticky "w"
+grid $frm.lnn7 -sticky "w"
+grid $frm.lnn8 -sticky "w"
+grid $frm.lnn9 -sticky "w"
+grid $frm.lnn10 -sticky "w"
+
+
+
+bind . <Alt-KeyPress-x> { exit }
+bind . <KeyPress-Escape> { exit }
+
+focus -force .
+
+
+proc procASC { } {
+
+global quantity weight frm nn
+
+set adjsc [ expr $quantity * $weight * 3.00 ]
+
+set adjshipcost [ format "\$%.2f" $adjsc ]
+
+set frm [Rnotebook:frame $nn 1]
+$frm.scost2 configure -text $adjshipcost
+
+after 500
+
+update
+
+ }
+
+proc calcARO {} {
+
+global numweeks arodays frm nn
+
+set arodays [ expr $numweeks * 7 + 60 ]
+
+set frm [Rnotebook:frame $nn 2]
+$frm.l3b configure -text $arodays
+
+after 500
+
+update
+
+}
+
+proc convertCurr {} {
+
+global value cfactor frm nn
+
+if { $cfactor == "Convert EUR to USD" } {
+
+	set result [ expr $value * 1.5 ] 
+	set rresult [format "%.2f" $result ]
+	set reply [ tk_dialog .reply "Convert EUR to UDS" "\€$value is \$$rresult" 0 OK OK ]}
+	
+if { $cfactor == "Convert GBP to USD" } {
+
+	set result [ expr $value * 2 ] 
+	set rresult [format "%.2f" $result ]
+	set reply [ tk_dialog .reply "Convert GBP to USD" "\£$value is \$$rresult" 0 OK OK ]}
+	
+}
+
+
+
